@@ -8,10 +8,11 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .header {
-            background-color: #4a69bd;
+            background: linear-gradient(135deg, #f06, #ffba08);
             padding: 20px;
             text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            color: white;
         }
         button {
             padding: 10px 20px;
@@ -97,6 +98,7 @@
                         <li>Click the "<b>Read Aloud</b>" button to start reading the <b>current page aloud</b>.</li>
                         <li>If you want to <b>stop the audio</b>, click the "<b>Stop Audio</b>" button.</li>
                         <li>To read aloud <b>another page</b>, click the "<b>Stop Audio</b>" button, scroll to the desired page, and click the "<b>Read Aloud</b>" button again.</li>
+                        <li><b>If No text content</b>Scroll down or Scroll up for the text area pages.</li>
                     </ol>
                 </div>
                 <div class="modal-footer">
@@ -129,7 +131,7 @@
                     const pageText = textContent.items.map(item => item.str).join(' ');
                     pageTextContents[pageNum - 1] = pageText;
 
-                    const scale = 3.0; // Increased scale for even better quality
+                    const scale = 1.5; // Scale for better quality
                     const viewport = page.getViewport({ scale: scale });
                     const canvas = document.createElement("canvas");
                     const context = canvas.getContext('2d');
@@ -161,33 +163,33 @@
         });
 
         document.getElementById('readAloudButton').addEventListener('click', function() {
-    if (!pdfDoc) {
-        alert("Please load a PDF file first.");
-        return;
-    }
-    const viewer = document.getElementById('pdfViewer');
-    currentPageIndex = Math.floor(viewer.scrollTop / viewer.scrollHeight * pdfDoc.numPages);
-    let textContent = pageTextContents[currentPageIndex];
-    if (textContent) {
-        if (speechSynthesisUtterance) {
-            speechSynthesis.cancel();
-        }
-        speechSynthesisUtterance = new SpeechSynthesisUtterance(textContent);
+            if (!pdfDoc) {
+                alert("Please load a PDF file first.");
+                return;
+            }
+            const viewer = document.getElementById('pdfViewer');
+            currentPageIndex = Math.floor(viewer.scrollTop / viewer.scrollHeight * pdfDoc.numPages);
+            let textContent = pageTextContents[currentPageIndex];
+            if (textContent) {
+                if (speechSynthesisUtterance) {
+                    speechSynthesis.cancel();
+                }
+                speechSynthesisUtterance = new SpeechSynthesisUtterance(textContent);
 
-        // Set the desired voice or default to Google female voice
-        const voices = window.speechSynthesis.getVoices();
-        const desiredVoice = voices.find(voice => voice.name === "Microsoft Dilara Online (Natural) - Persian (Iran)");
-        speechSynthesisUtterance.voice = desiredVoice || voices.find(voice => voice.lang.startsWith('en') && voice.gender === 'female');
+                // Set the desired voice or default to Google female voice
+                const voices = window.speechSynthesis.getVoices();
+                const desiredVoice = voices.find(voice => voice.name === "Microsoft Dilara Online (Natural) - Persian (Iran)");
+                speechSynthesisUtterance.voice = desiredVoice || voices.find(voice => voice.lang.startsWith('en') && voice.gender === 'female');
 
-        if (!speechSynthesisUtterance.voice) {
-            alert("Desired voice not found. Using default voice.");
-        }
-        
-        speechSynthesis.speak(speechSynthesisUtterance);
-    } else {
-        alert("No text content available for this page.");
-    }
-});
+                if (!speechSynthesisUtterance.voice) {
+                    alert("Desired voice not found. Using default voice.");
+                }
+                
+                speechSynthesis.speak(speechSynthesisUtterance);
+            } else {
+                alert("No text content available for this page.");
+            }
+        });
 
         document.getElementById('stopButton').addEventListener('click', function() {
             speechSynthesis.cancel();
