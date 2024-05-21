@@ -8,7 +8,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .header {
-            background-color: #f0f8ff;
+            background-color: #4a69bd;
             padding: 20px;
             text-align: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -22,18 +22,25 @@
             transition: background-color 0.3s;
         }
         #readAloudButton {
-            background-color: #4CAF50;
+            background-color: #78e08f; 
             color: white;
         }
         #readAloudButton:hover {
-            background-color: #45a049;
+            background-color: #58b368;
         }
         #stopButton {
-            background-color: #f44336;
+            background-color: #e55039;
             color: white;
         }
         #stopButton:hover {
-            background-color: #d32f2f;
+            background-color: #b71540;
+        }
+        #helpButton {
+            background-color: #3cc0f1;; /* Blue Grey */
+            color: white;
+        }
+        #helpButton:hover {
+            background-color: #41b2db;
         }
         #pdfViewer {
             margin-top: 20px;
@@ -55,16 +62,56 @@
             -moz-osx-font-smoothing: grayscale;
             font-smoothing: antialiased;
         }
+        .modal-body p {
+            color: #2c3e50;
+        }
+        .modal-body ol {
+            color: #2980b9;
+        }
+        .modal-body ol li {
+            margin-bottom: 10px;
+        }
+        .modal-body b {
+            color: #e74c3c;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Upload and Read PDF</h1>
         <input type="file" id="fileUploader" accept="application/pdf" class="btn btn-primary">
-        <button id="readAloudButton" class="btn">Read Aloud Current Page</button>
+        <button id="readAloudButton" class="btn">Read Aloud</button>
         <button id="stopButton" class="btn">Stop Audio</button>
+        <button id="helpButton" class="btn btn-info" data-toggle="modal" data-target="#helpModal">Help</button>
     </div>
     <div id="pdfViewer" class="container"></div>
+
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="helpModalLabel">Help</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>To use this PDF reader with text-to-speech:</p>
+                    <ol>
+                        <li>Click the "<b>Choose File</b>" button to <b>upload</b> your PDF file.</li>
+                        <li>After the PDF is <b>loaded</b>, scroll to the page you want to start reading from.</li>
+                        <li>Click the "<b>Read Aloud</b>" button to start reading the <b>current page aloud</b>.</li>
+                        <li>If you want to <b>stop the audio</b>, click the "<b>Stop Audio</b>" button.</li>
+                        <li>To read aloud <b>another page</b>, click the "<b>Stop Audio</b>" button, scroll to the desired page, and click the "<b>Read Aloud</b>" button again.</li>
+                    </ol>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
