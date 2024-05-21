@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Reader with Text-to-Speech</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .header {
+            background-color: #f0f8ff;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #readAloudButton {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #readAloudButton:hover {
+            background-color: #45a049;
+        }
+        #stopButton {
+            background-color: #f44336;
+            color: white;
+        }
+        #stopButton:hover {
+            background-color: #d32f2f;
+        }
+        #pdfViewer {
+            margin-top: 20px;
+            position: relative;
+            height: 600px;
+            overflow-y: scroll;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+        canvas {
+            width: 100%;
+            max-width: 100%; /* Ensure the canvas does not exceed the container width */
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            display: block;
+        }
+        canvas {
+            image-rendering: optimizeQuality;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            /* font-smoothing: antialiased; */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Upload and Read PDF</h1>
+        <input type="file" id="fileUploader" accept="application/pdf" class="btn btn-primary">
+        <button id="readAloudButton" class="btn">Read Aloud Current Page</button>
+        <button id="stopButton" class="btn">Stop Audio</button>
+    </div>
+    <div id="pdfViewer" class="container"></div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+    <script>
+        let currentPageIndex = 0;
+        let pdfDoc = null;
+        let pageTextContents = [];
+        let speechSynthesisUtterance = null;
+
+        async function displayPDF(file) {
+            const fileReader = new FileReader();
+            fileReader.onload = async function() {
+                const typedarray = new Uint8Array(this.result);
+                pdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
+                console.log(`This PDF has ${pdfDoc.numPages} pages.`);
+                for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                    const page = await pdfDoc.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    pageTextContents[pageNum - 1] = pageText;
+
+                    const scale = 3.0; // Increased scale for even better quality
+                    const viewport = page.getViewport({ scale: scale });
+                    const canvas = document.createElement("canvas");
+                    const context = canvas.getContext('2d');
+                    const outputScale = window.devicePixelRatio || 1;
+                    canvas.width = Math.floor(viewport.width * outputScale);
+                    canvas.height = Math.floor(viewport.height * outputScale);
+                    canvas.style.width = `${viewport.width}px`;
+                    canvas.style.height = `${viewport.height}px`;
+                    context.scale(outputScale, outputScale);
+
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    await page.render(renderContext).promise;
+                    document.getElementById('pdfViewer').appendChild(canvas);
+                }
+            };
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        document.getElementById('fileUploader').addEventListener('change', function() {
+            const file = this.files[0];
+            if (file.type === "application/pdf") {
+                displayPDF(file);
+            } else {
+                alert("Please upload a PDF file.");
+            }
+        });
+
+        document.getElementById('readAloudButton').addEventListener('click', function() {
+            if (!pdfDoc) {
+                alert("Please load a PDF file first.");
+                return;
+            }
+            const viewer = document.getElementById('pdfViewer');
+            currentPageIndex = Math.floor(viewer.scrollTop / viewer.scrollHeight * pdfDoc.numPages);
+            let textContent = pageTextContents[currentPageIndex];
+            if (textContent) {
+                if (speechSynthesisUtterance) {
+                    speechSynthesis.cancel();
+                }
+                speechSynthesisUtterance = new SpeechSynthesisUtterance(textContent);
+                speechSynthesis.speak(speechSynthesisUtterance);
+            } else {
+                alert("No text content available for this page.");
+            }
+        });
+
+        document.getElementById('stopButton').addEventListener('click', function() {
+            speechSynthesis.cancel();
+        });
+    </script>
+</body>
+</html>
