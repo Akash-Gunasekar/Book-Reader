@@ -36,7 +36,7 @@
             background-color: #b71540;
         }
         #helpButton {
-            background-color: #3cc0f1;; /* Blue Grey */
+            background-color: #3cc0f1; /* Blue Grey */
             color: white;
         }
         #helpButton:hover {
@@ -55,12 +55,6 @@
             border: 1px solid #ddd;
             margin-bottom: 20px;
             display: block;
-        }
-        canvas {
-            image-rendering: optimizeQuality;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            font-smoothing: antialiased;
         }
         .modal-body p {
             color: #2c3e50;
@@ -123,6 +117,18 @@
         let pdfDoc = null;
         let pageTextContents = [];
         let speechSynthesisUtterance = null;
+        let voices = [];
+
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            const googleFemaleVoice = voices.find(voice => voice.name.includes("Google") && voice.name.includes("Female"));
+            if (googleFemaleVoice) {
+                console.log(`Selected voice: ${googleFemaleVoice.name}`);
+            } else {
+                console.log("Google female voice not found, using default voice.");
+            }
+            return googleFemaleVoice;
+        }
 
         async function displayPDF(file) {
             const fileReader = new FileReader();
@@ -180,17 +186,11 @@
                     speechSynthesis.cancel();
                 }
                 speechSynthesisUtterance = new SpeechSynthesisUtterance(textContent);
-
-                // Set the desired voice
-                const desiredVoiceName = "Google US English";
-                const voices = window.speechSynthesis.getVoices();
-                speechSynthesisUtterance.voice = voices.find(voice => voice.name === desiredVoiceName);
-
-                if (!speechSynthesisUtterance.voice) {
-                    alert("Desired voice not found. Please ensure it's available in your system.");
-                } else {
-                    speechSynthesis.speak(speechSynthesisUtterance);
+                const selectedVoice = loadVoices();
+                if (selectedVoice) {
+                    speechSynthesisUtterance.voice = selectedVoice;
                 }
+                speechSynthesis.speak(speechSynthesisUtterance);
             } else {
                 alert("No text content available for this page.");
             }
@@ -200,10 +200,8 @@
             speechSynthesis.cancel();
         });
 
-        // Populate the voices list on load
-        window.speechSynthesis.onvoiceschanged = function() {
-            window.speechSynthesis.getVoices();
-        };
+        // Load voices when they are loaded or changed
+        speechSynthesis.onvoiceschanged = loadVoices;
     </script>
 </body>
 </html>
