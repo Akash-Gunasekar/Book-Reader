@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF READER</title>
+    <title>PDF Reader with Text-to-Speech</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -53,7 +53,7 @@
             image-rendering: optimizeQuality;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            /* font-smoothing: antialiased; */
+            font-smoothing: antialiased;
         }
     </style>
 </head>
@@ -61,7 +61,7 @@
     <div class="header">
         <h1>Upload and Read PDF</h1>
         <input type="file" id="fileUploader" accept="application/pdf" class="btn btn-primary">
-        <button id="readAloudButton" class="btn">Read Audio</button>
+        <button id="readAloudButton" class="btn">Read Aloud Current Page</button>
         <button id="stopButton" class="btn">Stop Audio</button>
     </div>
     <div id="pdfViewer" class="container"></div>
@@ -133,7 +133,17 @@
                     speechSynthesis.cancel();
                 }
                 speechSynthesisUtterance = new SpeechSynthesisUtterance(textContent);
-                speechSynthesis.speak(speechSynthesisUtterance);
+
+                // Set the desired voice
+                const desiredVoiceName = "Microsoft Dilara Online (Natural) - Persian (Iran)";
+                const voices = window.speechSynthesis.getVoices();
+                speechSynthesisUtterance.voice = voices.find(voice => voice.name === desiredVoiceName);
+
+                if (!speechSynthesisUtterance.voice) {
+                    alert("Desired voice not found. Please ensure it's available in your system.");
+                } else {
+                    speechSynthesis.speak(speechSynthesisUtterance);
+                }
             } else {
                 alert("No text content available for this page.");
             }
@@ -142,6 +152,11 @@
         document.getElementById('stopButton').addEventListener('click', function() {
             speechSynthesis.cancel();
         });
+
+        // Populate the voices list on load
+        window.speechSynthesis.onvoiceschanged = function() {
+            window.speechSynthesis.getVoices();
+        };
     </script>
 </body>
 </html>
